@@ -116,7 +116,7 @@ void loop()
     if(i==1023)
     measureState="0";
     delay(87);
-    newtons = scale.get_units()* 0.035274*9.8/1000;
+    newtons = scale.get_units()* 0.035274*9,80665/1000;
     arr[i]=newtons;
     count++;
     server.handleClient();
