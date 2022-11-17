@@ -1,3 +1,9 @@
+/*  Anna S. a.k.a plokmit
+ *  2022
+ *  Distributed free
+ *  Rocket test rig main program
+ */
+
 #include <ESP8266WebServer.h>
 #include <HX711.h>
 
@@ -6,18 +12,26 @@
 
 extern const char logo_jpeg[81312];
 extern const char webpage[] PROGMEM;
+
+const double calibrationCoefficient=17.31; 
+/* Moscow region acceleration */
+const double gMoscow=9.8154;    
+
+const char *ssid = "ESPAP"; 
+const char *password = "";
+
+
 int count=0;
 double arr[1024]; 
 double newtons; 
-double calibrationCoefficient=17.31; 
 double sec = 0;
 double impulse = 0;
 String measureState="0"; 
-const char *ssid = "ESPAP"; 
-const char *password = "password";
 
 HX711 scale;
 ESP8266WebServer server(80); 
+
+
 
 void mainHTMLPage()
 {
@@ -38,15 +52,15 @@ void setStateMeasure()
 
 void sendArray() 
 {
-    String arrStr;
-    for (int i = 0; i < 1024; i++)
-      arrStr +=(String)arr[i] + " ";
-    server.send(200,"text/html", arrStr);
+  String arrStr;
+  for (int i = 0; i < 1024; i++)
+    arrStr +=(String)arr[i] + " ";
+  server.send(200,"text/html", arrStr);
 }
 
 void sendThrust()
 {
-  String thrust =(String) (scale.get_units()* 0.035274*9.8/1000);
+  String thrust =(String) (scale.get_units()* 0.035274*gMoscow/1000);
   server.send(200,"text/plane", thrust);
 }
 
@@ -73,7 +87,7 @@ void sendFile()
 
 void calibrate()
 {
-    scale.tare();
+  scale.tare();
 }
 
 void clearArray() 
@@ -86,9 +100,8 @@ void clearArray()
 
 void setup(void) 
 {
-  clearArray();
-  Serial.begin(115200);
   WiFi.softAP(ssid, password);
+  Serial.begin(115200);
   Serial.println();
   Serial.print("IP address: ");
   Serial.println(WiFi.softAPIP());
@@ -105,6 +118,7 @@ void setup(void)
   server.on("/file.csv",sendFile);
   server.on("/calibrate", calibrate);
   server.begin(); 
+  clearArray();
 }
 
 void loop() 
@@ -114,9 +128,9 @@ void loop()
     clearArray();
   for (int i=0; measureState == "1"&&i<1024; i++) {
     if(i==1023)
-    measureState="0";
+      measureState="0";
     delay(87);
-    newtons = scale.get_units()* 0.035274*9,80665/1000;
+    newtons = scale.get_units()* 0.035274*gMoscow/1000;
     arr[i]=newtons;
     count++;
     server.handleClient();
