@@ -1,156 +1,155 @@
 <!DOCTYPE html>
 <html>
-<head><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Thrust</title> 
-</head>
-<body>
-<img src="http://192.168.4.1/logo" width="250px">
-<br><button id = "buttonStart" onclick="changeState(1)" >Start</button>
-    <button id = "buttonStop" onclick="changeState(0)" >Stop</button>
-    <button id = "buttonCalib" onclick="calibrate()" >Calibration</button>
-    <a href="/file.csv" download="File">
-    <button id ="buttonFile">Save file</button>
-    </a>
-</br>
-<br><span id="state"></span></br>
-<p style="border:3px #808080  solid;width: 175px">
-    Thrust, F:
-    <br><span id="Thrust"> </span> N</br>
-</p>
-<p style="border:3px #808080  solid;width: 175px">
-    Impulse, J:
-    <br><span id="Impulse"></span> N*s</br>
-</p>
+    <head><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+        <title>Thrust</title> 
+    </head>
+    <body>
+        <img src="/logo" width="250px">
+        <br><button id = "buttonStart" onclick="changeState(1)" >Start</button>
+            <button id = "buttonStop" onclick="changeState(0)" >Stop</button>
+            <button id = "buttonCalib" onclick="calibrate()" >Calibration</button>
+            <a href="/file.csv" download="File">
+                <button id ="buttonFile">Save file</button>
+            </a>
+        </br>
+        <br><span id="state"></span></br>
+        <p style="border:3px #808080  solid;width: 175px">
+            Thrust, F:
+            <br><span id="Thrust"> </span> N</br>
+        </p>
+        <p style="border:3px #808080  solid;width: 175px">
+            Impulse, J:
+            <br><span id="Impulse"></span> N*s</br>
+        </p>
 
-<canvas width="700" height="700" id="canvas"></canvas>  
+        <canvas width="700" height="700" id="canvas"></canvas>  
 
-<script>
-    let graphIntId;
-    let ImpulseIntId;
-    let arrayIntId;
-    arrayIntId = setInterval(function(){getArray()}, 1000);
-    setInterval(function(){getThrust()},250);
+        <script>
+            let graphIntId;
+            let ImpulseIntId;
+            let arrayIntId;
+            arrayIntId = setInterval(function(){getArray()}, 1000);
+            setInterval(function(){getThrust()},250);
 
-    function changeState(stateMeasure)
-    {
-    const xml = new XMLHttpRequest();
-    xml.open("GET", "http://192.168.4.1/state_measure?state="+stateMeasure, true);
-    if (stateMeasure == "1"){
-        for (let i=0;i<1024;i++) {
-            arrOfString[i] = 'nan';
-        }
-        clearGraph();
-        drawAxes();
-        graphIntId = setInterval(function(){drawGraph()},1000);
-        ImpulseIntId = setInterval(function(){getImpulse()},1000);
-        document.getElementById("state").innerHTML = "Measurement started";
-    }
-    if (stateMeasure == "0"){
-        clearInterval(graphIntId);
-        clearInterval(ImpulseIntId);
-        document.getElementById("state").innerHTML = "Measurement stopped";
-    }
-    xml.send();
-    }
-
-    function getThrust()
-    {
-        const xml = new XMLHttpRequest();
-        xml.onreadystatechange = function()
-        {
-            if (this.readyState == 4 && this.status == 200){
-                document.getElementById("Thrust").innerHTML = this.responseText;
-        }
-        };
-        xml.open("GET", "http://192.168.4.1/thrust", true);
-        xml.send();
-    }
-
-    function getImpulse()
-    {
-        const xml = new XMLHttpRequest();
-        xml.onreadystatechange = function()
-        {
-            if (this.readyState == 4 && this.status == 200){
-                document.getElementById("Impulse").innerHTML = this.responseText;
+            function changeState(stateMeasure)
+            {
+                const xml = new XMLHttpRequest();
+                xml.open("GET", "/state_measure?state="+stateMeasure, true);
+                if (stateMeasure == "1"){
+                    for (let i=0;i<1024;i++) {
+                        arrOfString[i] = 'nan';
+                    }
+                    clearGraph();
+                    drawAxes();
+                    graphIntId = setInterval(function(){drawGraph()},1000);
+                    ImpulseIntId = setInterval(function(){getImpulse()},1000);
+                    document.getElementById("state").innerHTML = "Measurement started";
+                }
+                if (stateMeasure == "0"){
+                    clearInterval(graphIntId);
+                    clearInterval(ImpulseIntId);
+                    document.getElementById("state").innerHTML = "Measurement stopped";
+                }
+                xml.send();
             }
-        };
-        xml.open("GET", "http://192.168.4.1/impulse", true);
-        xml.send();
-    }
 
-    function calibrate()
-    {
-        const hxml = new XMLHttpRequest();
-        hxml.open("GET", "http://192.168.4.1/calibrate", true);
-        hxml.send();
-    }
-
-    var canvas = document.getElementById('canvas');
-    var ctx = canvas.getContext('2d');
-
-    function drawAxes()
-    {
-        ctx.strokeStyle = "black";
-        ctx.lineWidth = 1.0;
-        ctx.beginPath();
-        ctx.moveTo(30, 40);
-        ctx.lineTo(30, 500);
-        ctx.lineTo(500, 500);
-        ctx.stroke();
-        for (var i=0; i<=11;i++){
-            ctx.strokeStyle = "#808080";
-            ctx.fillText(i*5,0,500-i*46);
-            ctx.beginPath();
-            ctx.moveTo(30, 500-i*46);
-            ctx.lineTo(536, 500-i*46);
-            ctx.stroke();
-        }
-        for (var i=0; i<=11;i++){
-            ctx.strokeStyle = "#808080";
-            ctx.fillText(i*10,30+i*46,515);
-            ctx.beginPath();
-            ctx.moveTo(30+i*46, 500);
-            ctx.lineTo(30+i*46, 40);
-            ctx.stroke();
-        }
-    }
-    drawAxes();
-    
-    function drawGraph()
-    {
-        ctx.strokeStyle = 'red';
-        ctx.lineWidth = 2.0;
-        ctx.beginPath();
-        ctx.moveTo(30,500);
-        for (var i=0; i<1024;i++) {
-            ctx.lineTo(30+i/2,(500-(arrOfString[i]*9.2)));
-        }
-        ctx.stroke();
-        ctx.lineJoin='round';
-        if (arrOfString[1023]!='nan')
-            changeState(0);
-    }
-
-    function clearGraph()
-    {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-
-    var arrOfString;
-    function getArray()
-    {
-        const xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function()
-        {
-            if (this.readyState == 4 && this.status == 200){
-                arrOfString = xhttp.responseText.split(' ');
+            function getThrust()
+            {
+                const xml = new XMLHttpRequest();
+                xml.onreadystatechange = function(){
+                    if (this.readyState == 4 && this.status == 200){
+                        document.getElementById("Thrust").innerHTML = this.responseText;
+                    }
+                };
+                xml.open("GET", "/thrust", true);
+                xml.send();
             }
-        };
-        xhttp.open("GET","http://192.168.4.1/array", true);
-        xhttp.send();
-    }
-</script>
 
-</body>
+            function getImpulse()
+            {
+                const xml = new XMLHttpRequest();
+                xml.onreadystatechange = function(){
+                    if (this.readyState == 4 && this.status == 200){
+                        document.getElementById("Impulse").innerHTML = this.responseText;
+                    }
+                };
+                xml.open("GET", "/impulse", true);
+                xml.send();
+            }
+
+            function calibrate()
+            {
+                const hxml = new XMLHttpRequest();
+                hxml.open("GET", "/calibrate", true);
+                hxml.send();
+            }
+
+            var canvas = document.getElementById('canvas');
+            var ctx = canvas.getContext('2d');
+
+            function drawAxes()
+            {
+                ctx.strokeStyle = "black";
+                ctx.lineWidth = 1.0;
+                ctx.beginPath();
+                ctx.moveTo(30, 40);
+                ctx.lineTo(30, 500);
+                ctx.lineTo(500, 500);
+                ctx.stroke();
+                for (var i=0; i<=11;i++){
+                    ctx.strokeStyle = "#808080";
+                    ctx.fillText(i*5,0,500-i*46);
+                    ctx.beginPath();
+                    ctx.moveTo(30, 500-i*46);
+                    ctx.lineTo(536, 500-i*46);
+                    ctx.stroke();
+                }
+                for (var i=0; i<=11;i++){
+                    ctx.strokeStyle = "#808080";
+                    ctx.fillText(i*10,30+i*46,515);
+                    ctx.beginPath();
+                    ctx.moveTo(30+i*46, 500);
+                    ctx.lineTo(30+i*46, 40);
+                    ctx.stroke();
+                }
+            }
+            
+            drawAxes();
+            
+            function drawGraph()
+            {
+                ctx.strokeStyle = 'red';
+                ctx.lineWidth = 2.0;
+                ctx.beginPath();
+                ctx.moveTo(30,500);
+                for (var i=0; i<1024;i++) {
+                    ctx.lineTo(30+i/2,(500-(arrOfString[i]*9.2)));
+                }
+                ctx.stroke();
+                ctx.lineJoin='round';
+                if (arrOfString[1023]!='nan')
+                    changeState(0);
+            }
+
+            function clearGraph()
+            {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+
+            var arrOfString;
+            
+            function getArray()
+            {
+                const xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function()
+                {
+                    if (this.readyState == 4 && this.status == 200){
+                        arrOfString = xhttp.responseText.split(' ');
+                    }
+                };
+                xhttp.open("GET","/array", true);
+                xhttp.send();
+            }
+        </script>
+    </body>
 </html>
