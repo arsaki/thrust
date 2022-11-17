@@ -55,7 +55,7 @@ void setStateMeasure()
 void sendArray() 
 {
   String arrStr;
-  for (int i = 0; i < SAMPLES+COUNT; i++)
+  for (int i = 0; i < ARRAY_LENGTH+COUNT; i++)
     arrStr += (String)arr[i] + " ";
   server.send(200,"text/html", arrStr);
 }
