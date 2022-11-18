@@ -118,14 +118,14 @@ void setup(void)
   scale.begin(DT, SCK); 
   scale.set_scale(calibrationCoefficient);
   scale.tare();
-  server.on("/",     mainHTMLPage);
+  server.on("/",mainHTMLPage);
   server.on("/logo", sendImage);
-  server.on("/file.csv",  sendFile);
-  server.on("/calibrate", calibrate);
   server.on("/state_measure", setStateMeasure);
-  server.on("/thrust",  sendThrust);
+  server.on("/array", sendArray);
+  server.on("/thrust", sendThrust);
   server.on("/impulse", sendImpulse);
-  server.on("/array",   sendArray);
+  server.on("/file.csv",sendFile);
+  server.on("/calibrate", calibrate);
   server.begin(); 
   clearArray();
 }
