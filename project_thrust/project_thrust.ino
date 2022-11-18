@@ -8,6 +8,7 @@
 #include <ESP8266WebServer.h>
 #include <HX711.h>
 
+/* NodeMCU pin assignment */
 #define DT  		12
 #define SCK 		13
 /* Thrust measurement data array length */
@@ -22,21 +23,21 @@ extern const char webpage[];
 const char *ssid     = "Project Thrust"; 
 const char *password = "";
 
+/* 5kg load cell */
 const double calibrationCoefficient = 17.233826;
 const double unitsToKg = 0.035274;
-/* Moscow region gravitational constant */
+/* Gravitational acceleration in Moscow region */
 const double gMoscow   = 9.8154;    
 
-int    count   = 0;
-double sec     = 0;
-double impulse = 0;
-double newtons; 
+double newtons = 0; 
 /* Thrust measurement data array */
 double thrust_array[ARRAY_LENGTH]; 
+int    thrust_array_count   = 0;
 String measureState ="0"; 
 
 HX711 scale;
 ESP8266WebServer server(80); 
+
 
 
 void mainHTMLPage()
@@ -65,13 +66,17 @@ void sendArray()
 
 void sendThrust()
 {
-  String thrust =(String)(scale.get_units()*unitsToKg*gMoscow/1000);
+  String thrust;
+  if (measureState == "0")
+    thrust = (String)(scale.get_units()*unitsToKg*gMoscow/1000);
+  else
+    thrust = (String)newtons;
   server.send(200, "text/plane", thrust);
 }
 
 void sendImpulse()
 {
-  impulse = 0;
+  double impulse = 0;
   for (int i = 0; i < ARRAY_LENGTH; i++){
     if((String)thrust_array[i] != "nan"){
       impulse = impulse + (thrust_array[i]*0.1);
@@ -83,7 +88,8 @@ void sendImpulse()
 void sendFile() 
 {
   String file;
-  for (int i = 0; i < count; i++){
+  double sec = 0;
+  for (int i = 0; i < thrust_array_count; i++){
     sec += 0.1;
     file += (String)thrust_array[i] + "," + sec +"," + "\n";
   }
@@ -99,8 +105,7 @@ void clearArray()
 {
   for (int i = 0; i < ARRAY_LENGTH; i++)
     thrust_array[i] = NAN;
-  count = 0;
-  sec = 0;
+  thrust_array_count = 0;
 }
 
 void setup(void) 
@@ -136,7 +141,7 @@ void loop()
     delay(87);
     newtons = scale.get_units()*unitsToKg*gMoscow/1000;
     thrust_array[i] = newtons;
-    count++;
+    thrust_array_count++;
     server.handleClient();
   }
 }
