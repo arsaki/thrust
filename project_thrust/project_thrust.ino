@@ -2,7 +2,7 @@
  *  Author Anna S. a.k.a plokmit
  *  2022
  *  Distributed free
- *  Rocket engine test rig program
+ *  Rocket engines thrust stand program
  */
 
 #include <ESP8266WebServer.h>
@@ -27,7 +27,7 @@ const char *password = "";
 const double calibrationCoefficient = 17.233826;
 const double unitsToKg = 0.035274;
 /* Gravitational acceleration in Moscow region */
-const double gMoscow   = 9.8154;    
+const double g = 9.8154;    
 
 double newtons = 0; 
 /* Thrust measurement data array */
@@ -68,7 +68,7 @@ void sendThrust()
 {
   String thrust;
   if (measureState == "0")
-    thrust = (String)(scale.get_units()*unitsToKg*gMoscow/1000);
+    thrust = (String)(scale.get_units()*unitsToKg*g/1000);
   else
     thrust = (String)newtons;
   server.send(200, "text/plane", thrust);
@@ -139,7 +139,7 @@ void loop()
     if(i == ARRAY_LENGTH - 1)
       measureState = "0";
     delay(87);
-    newtons = scale.get_units()*unitsToKg*gMoscow/1000;
+    newtons = scale.get_units()*unitsToKg*g/1000;
     thrust_array[i] = newtons;
     thrust_array_count++;
     server.handleClient();
