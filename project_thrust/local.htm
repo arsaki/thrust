@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+    <head><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+        <title>Thrust</title> 
+    </head>
+    <body>
+        <img src="/logo" width="250px">
+        <br><button id = "buttonStart" onclick="changeState(1)" >Start</button>
+            <button id = "buttonStop" onclick="changeState(0)" >Stop</button>
+            <button id = "buttonCalib" onclick="calibrate()" >Calibration</button>
+            <a href="/file.csv" download="File">
+                <button id ="buttonFile">Save file</button>
+            </a>
+        </br>
+        <br><span id="state"></span></br>
+        <p style="border:3px #808080  solid;width: 175px">
+            Thrust, F:
+            <br><span id="Thrust"> </span> N</br>
+        </p>
+        <p style="border:3px #808080  solid;width: 175px">
+            Impulse, J:
+            <br><span id="Impulse"></span> N*s</br>
+        </p>
+
+        <canvas width="700" height="700" id="canvas"></canvas>  
+
+        <script>
+            var thrust = 0;
+            var graphIntId;
+            var ImpulseIntId;
+            var arrayIntId;
+            var stateMeasure;
+
+            var arrOfString = [];
+            arrayIntId = setInterval(function(){getArray()}, 100);
+            setInterval(function(){getThrust()},250);
+
+            function changeState(state)
+            {
+
+                if (state == 1){
+                    for (let i=0;i<1024;i++) {
+                        arrOfString[i] = 'nan';
+                    }
+                    stateMeasure = 1;
+                    clearGraph();
+                    drawAxes();
+                    graphIntId = setInterval(function(){drawGraph()},1000);
+                    ImpulseIntId = setInterval(function(){getImpulse()},1000);
+                    document.getElementById("state").innerHTML = "Measurement started";
+                }
+                if (state == 0){
+                    stateMeasure = 0;
+                    clearInterval(graphIntId);
+                    clearInterval(ImpulseIntId);
+                    document.getElementById("state").innerHTML = "Measurement stopped";
+                }
+
+            }
+
+            function getThrust()
+            {
+                document.getElementById("Thrust").innerHTML = thrust;
+            }
+
+            function getImpulse()
+            {   
+                if (stateMeasure == 1)                   
+                   document.getElementById("Impulse").innerHTML = thrust;
+            }
+
+            function calibrate()
+            {
+                document.getElementById("state").innerHTML = "Calibrated";
+            }
+
+            var canvas = document.getElementById('canvas');
+            var ctx = canvas.getContext('2d');
+
+            function drawAxes()
+            {
+                ctx.strokeStyle = "black";
+                ctx.lineWidth = 1.0;
+                ctx.beginPath();
+                ctx.moveTo(30, 40);
+                ctx.lineTo(30, 500);
+                ctx.lineTo(500, 500);
+                ctx.stroke();
+                for (var i=0; i<=11;i++){
+                    ctx.strokeStyle = "#808080";
+                    ctx.fillText(i*5,0,500-i*46);
+                    ctx.beginPath();
+                    ctx.moveTo(30, 500-i*46);
+                    ctx.lineTo(536, 500-i*46);
+                    ctx.stroke();
+                }
+                for (var i=0; i<=11;i++){
+                    ctx.strokeStyle = "#808080";
+                    ctx.fillText(i*10,30+i*46,515);
+                    ctx.beginPath();
+                    ctx.moveTo(30+i*46, 500);
+                    ctx.lineTo(30+i*46, 40);
+                    ctx.stroke();
+                }
+            }
+            
+            drawAxes();
+            
+            function drawGraph()
+            {   
+                ctx.strokeStyle = 'red';
+                ctx.lineWidth = 2.0;
+                ctx.beginPath();
+                ctx.moveTo(30, 500-(arrOfString[0]*9.2));
+                for (var i=1; i<(1024);i++) {
+                    ctx.lineTo(30+i/2,(500-(arrOfString[i]*9.2)));
+                }
+                ctx.stroke();
+                ctx.lineJoin='round';
+                if (arrOfString[1023]!='nan')
+                    changeState(0);
+            }
+
+            function clearGraph()
+            {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+
+
+            let count = 0;
+            function getArray()
+            {
+                if (stateMeasure == 1){
+                    thrust++;           
+                    arrOfString[count++] = thrust/100;                
+                }
+            }
+        </script>
+    </body>
+</html>
