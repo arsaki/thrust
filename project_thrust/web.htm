@@ -35,9 +35,7 @@
 
             function changeState(newState)
             {
-                const xml = new XMLHttpRequest();
-                xml.open("GET", "/state_measure?state="+stateMeasure, true);
-                if (newState == "1"){
+                if (newState == 1){
                     stateMeasure = 1;
                     clearGraph();
                     thrustArray = [];
@@ -47,13 +45,16 @@
                     document.getElementById("state").innerHTML = "Measurement started";
 
                 }
-                if (newState == "0"){
-                    xml.open("GET", "/state_measure?state="+stateMeasure, true);
+                if (newState == 0){
+                    stateMeasure = 0;
                     clearInterval(graphIntId);
                     clearInterval(ImpulseIntId);
                     document.getElementById("state").innerHTML = "Measurement stopped";
-                    stateMeasure = 0;
-                }
+                }                
+                const xml = new XMLHttpRequest();
+                xml.open("GET", "/state_measure?state="+stateMeasure, true);
+                xml.send();
+                xml.open("GET", "/state_measure?state="+stateMeasure, true);
                 xml.send();
             }
 
@@ -136,7 +137,7 @@
                 }
                 ctx.stroke();
                 ctx.lineJoin='round';
-                if (arrOfString.length == 1023)
+                if (arrOfString.length > 102*4)
                     changeState(0);
             }
 
@@ -144,7 +145,7 @@
             {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
             }
-           
+          
         </script>
     </body>
 </html>
