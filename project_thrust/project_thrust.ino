@@ -20,7 +20,7 @@ extern const char logo_jpeg[LOGO_JPEG_SIZE];
 /* web.htm */
 extern const char webpage[];
 
-const char *ssid     = "Экспансия"; 
+const char *ssid     = "Project Thrust"; 
 const char *password = "";
 
 /* 5kg load cell */
