@@ -5,11 +5,11 @@
     </head>
     <body>
         <img src="/logo" width="250px">
-        <br><button id = "buttonStart" onclick="changeState(1)" >Start</button>
-            <button id = "buttonStop" onclick="changeState(0)" >Stop</button>
-            <button id = "buttonCalib" onclick="calibrate()" >Calibration</button>
+        <br><button id = "buttonStart" style="height:30px" onclick="changeState(1)" >Start</button>
+            <button id = "buttonStop" style="height:30px" onclick="changeState(0)" >Stop</button>
+            <button id = "buttonCalib" style="height:30px" onclick="calibrate()" >Calibration</button>
             <a href="/file.csv" download="File">
-                <button id ="buttonFile">Save file</button>
+                <button id ="buttonFile" style="height:30px">Save file</button>
             </a>
         </br>
         <br><span id="state"></span></br>
@@ -27,8 +27,9 @@
         <script>
             let graphIntId;
             let ImpulseIntId;
-            let run;
-            let arrayIntId;
+            let runningMeasure;
+            var thrustArray;
+//            let arrayIntId;
 //            arrayIntId = setInterval(function(){getArray()}, 1000);
             setInterval(function(){getThrust()},250);
             var arrOfString = [];
@@ -38,34 +39,34 @@
                 const xml = new XMLHttpRequest();
                 xml.open("GET", "/state_measure?state="+stateMeasure, true);
                 if (stateMeasure == "1"){
-                    for (let i=0;i<1024;i++) {
-                        arrOfString[i] = 'nan';
-                    }
+                    runningMeasure = 1;
                     clearGraph();
+                    thrustArray = [];
                     drawAxes();
                     graphIntId = setInterval(function(){drawGraph()},1000);
                     ImpulseIntId = setInterval(function(){getImpulse()},1000);
                     document.getElementById("state").innerHTML = "Measurement started";
-                    run = 1;
+
                 }
                 if (stateMeasure == "0"){
+                    xml.open("GET", "/state_measure?state="+stateMeasure, true);
                     clearInterval(graphIntId);
                     clearInterval(ImpulseIntId);
                     document.getElementById("state").innerHTML = "Measurement stopped";
-                    run = 0;
+                    runningMeasure = 0;
                 }
                 xml.send();
             }
-            var Str;
+
             function getThrust()
             {
                 const xml = new XMLHttpRequest();
                 xml.onreadystatechange = function(){
                     if (this.readyState == 4 && this.status == 200){
                         document.getElementById("Thrust").innerHTML = this.responseText;
-                        if (run == "1") {
-                            Str += this.responseText + " ";
-                            arrOfString = Str.split(" ");
+                        if (runningMeasure == "1") {
+                            thrustArray += this.responseText + " ";
+                            arrOfString = thrustArray.split(" ");
                         }
                     }
                 };
@@ -132,7 +133,7 @@
                 ctx.beginPath();
                 ctx.moveTo(30, 500-(arrOfString[0]*9.2));
                 for (var i=1; i<arrOfString.length;i++) {
-                    ctx.lineTo(30+i*2.5/2,(500-(arrOfString[i]*9.2)));
+                    ctx.lineTo(30+i*2.32/2,(500-(arrOfString[i]*9.2)));
                 }
                 ctx.stroke();
                 ctx.lineJoin='round';

@@ -20,7 +20,7 @@ extern const char logo_jpeg[LOGO_JPEG_SIZE];
 /* web.htm */
 extern const char webpage[];
 
-const char *ssid     = "Project Thrust"; 
+const char *ssid     = "Экспансия"; 
 const char *password = "";
 
 /* 5kg load cell */
@@ -138,7 +138,8 @@ void loop()
   for (int i = 0; (measureState == "1") && (i < ARRAY_LENGTH); i++) {
     if(i == ARRAY_LENGTH - 1)
       measureState = "0";
-    delay(87);
+    delay(94);
+    Serial.println((double)i/10);
     newtons = scale.get_units()*unitsToKg*g/1000;
     thrust_array[i] = newtons;
     thrust_array_count++;
