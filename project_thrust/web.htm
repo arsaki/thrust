@@ -5,11 +5,11 @@
     </head>
     <body>
         <img src="/logo" width="250px">
-        <br><button id = "buttonStart" onclick="changeState(1)" >Start</button>
-            <button id = "buttonStop" onclick="changeState(0)" >Stop</button>
-            <button id = "buttonCalib" onclick="calibrate()" >Calibration</button>
+        <br><button id = "buttonStart" style="height:35px" onclick="changeState(1)" >Start</button>
+            <button id = "buttonStop" style="height:35px" onclick="changeState(0)" >Stop</button>
+            <button id = "buttonCalib" style="height:35px" onclick="calibrate()" >Calibration</button>
             <a href="/file.csv" download="File">
-                <button id ="buttonFile">Save file</button>
+                <button id ="buttonFile" style="height:35px">Save file</button>
             </a>
         </br>
         <br><span id="state"></span></br>
@@ -27,29 +27,34 @@
         <script>
             let graphIntId;
             let ImpulseIntId;
-            let arrayIntId;
-            arrayIntId = setInterval(function(){getArray()}, 1000);
+            let stateMeasure;
+            let thrustArray;
+            let arrOfString = [];
+
             setInterval(function(){getThrust()},250);
 
-            function changeState(stateMeasure)
+            function changeState(newState)
             {
-                const xml = new XMLHttpRequest();
-                xml.open("GET", "/state_measure?state="+stateMeasure, true);
-                if (stateMeasure == "1"){
-                    for (let i=0;i<1024;i++) {
-                        arrOfString[i] = 'nan';
-                    }
+                if (newState == 1){
+                    stateMeasure = 1;
                     clearGraph();
+                    thrustArray = [];
                     drawAxes();
-                    graphIntId = setInterval(function(){drawGraph()},1000);
-                    ImpulseIntId = setInterval(function(){getImpulse()},1000);
+                    graphIntId = setInterval(function(){drawGraph()},250);
+                    ImpulseIntId = setInterval(function(){getImpulse()},250);
                     document.getElementById("state").innerHTML = "Measurement started";
+
                 }
-                if (stateMeasure == "0"){
+                if (newState == 0){
+                    stateMeasure = 0;
                     clearInterval(graphIntId);
                     clearInterval(ImpulseIntId);
                     document.getElementById("state").innerHTML = "Measurement stopped";
-                }
+                }                
+                const xml = new XMLHttpRequest();
+                xml.open("GET", "/state_measure?state="+stateMeasure, true);
+                xml.send();
+                xml.open("GET", "/state_measure?state="+stateMeasure, true);
                 xml.send();
             }
 
@@ -59,10 +64,15 @@
                 xml.onreadystatechange = function(){
                     if (this.readyState == 4 && this.status == 200){
                         document.getElementById("Thrust").innerHTML = this.responseText;
+                        if (stateMeasure == "1") {
+                            thrustArray += this.responseText + " ";
+                            arrOfString = thrustArray.split(" ");
+                        }
                     }
                 };
                 xml.open("GET", "/thrust", true);
                 xml.send();
+
             }
 
             function getImpulse()
@@ -122,12 +132,12 @@
                 ctx.lineWidth = 2.0;
                 ctx.beginPath();
                 ctx.moveTo(30, 500-(arrOfString[0]*9.2));
-                for (var i=1; i<(1024);i++) {
-                    ctx.lineTo(30+i/2,(500-(arrOfString[i]*9.2)));
+                for (var i=1; i<arrOfString.length;i++) {
+                    ctx.lineTo(30+i*2.32/2,(500-(arrOfString[i]*9.2)));
                 }
                 ctx.stroke();
                 ctx.lineJoin='round';
-                if (arrOfString[1023]!='nan')
+                if (arrOfString.length > 102*4)
                     changeState(0);
             }
 
@@ -135,21 +145,7 @@
             {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
             }
-
-            var arrOfString;
-            
-            function getArray()
-            {
-                const xhttp = new XMLHttpRequest();
-                xhttp.onreadystatechange = function()
-                {
-                    if (this.readyState == 4 && this.status == 200){
-                        arrOfString = xhttp.responseText.split(' ');
-                    }
-                };
-                xhttp.open("GET","/array", true);
-                xhttp.send();
-            }
+          
         </script>
     </body>
 </html>
