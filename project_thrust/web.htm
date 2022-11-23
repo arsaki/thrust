@@ -5,11 +5,11 @@
     </head>
     <body>
         <img src="/logo" width="250px">
-        <br><button id = "buttonStart" style="height:30px" onclick="changeState(1)" >Start</button>
-            <button id = "buttonStop" style="height:30px" onclick="changeState(0)" >Stop</button>
-            <button id = "buttonCalib" style="height:30px" onclick="calibrate()" >Calibration</button>
+        <br><button id = "buttonStart" style="height:35px" onclick="changeState(1)" >Start</button>
+            <button id = "buttonStop" style="height:35px" onclick="changeState(0)" >Stop</button>
+            <button id = "buttonCalib" style="height:35px" onclick="calibrate()" >Calibration</button>
             <a href="/file.csv" download="File">
-                <button id ="buttonFile" style="height:30px">Save file</button>
+                <button id ="buttonFile" style="height:35px">Save file</button>
             </a>
         </br>
         <br><span id="state"></span></br>
@@ -43,8 +43,8 @@
                     clearGraph();
                     thrustArray = [];
                     drawAxes();
-                    graphIntId = setInterval(function(){drawGraph()},1000);
-                    ImpulseIntId = setInterval(function(){getImpulse()},1000);
+                    graphIntId = setInterval(function(){drawGraph()},250);
+                    ImpulseIntId = setInterval(function(){getImpulse()},250);
                     document.getElementById("state").innerHTML = "Measurement started";
 
                 }

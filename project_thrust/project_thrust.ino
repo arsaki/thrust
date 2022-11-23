@@ -135,8 +135,8 @@ void loop()
     newtons = scale.get_units()*unitsToKg*g/1000;
     thrustArray[i] = newtons;
     thrustArrayCount++;
-    while (millis() < (startTime + 100))
+    while (millis() < (startTime + 80))
       server.handleClient();
-;
+    while (millis() < (startTime + 100));
   }
 }
