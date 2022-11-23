@@ -27,19 +27,18 @@
         <script>
             let graphIntId;
             let ImpulseIntId;
-            let runningMeasure;
-            var thrustArray;
-//            let arrayIntId;
-//            arrayIntId = setInterval(function(){getArray()}, 1000);
-            setInterval(function(){getThrust()},250);
-            var arrOfString = [];
+            let stateMeasure;
+            let thrustArray;
+            let arrOfString = [];
 
-            function changeState(stateMeasure)
+            setInterval(function(){getThrust()},250);
+
+            function changeState(newState)
             {
                 const xml = new XMLHttpRequest();
                 xml.open("GET", "/state_measure?state="+stateMeasure, true);
-                if (stateMeasure == "1"){
-                    runningMeasure = 1;
+                if (newState == "1"){
+                    stateMeasure = 1;
                     clearGraph();
                     thrustArray = [];
                     drawAxes();
@@ -48,12 +47,12 @@
                     document.getElementById("state").innerHTML = "Measurement started";
 
                 }
-                if (stateMeasure == "0"){
+                if (newState == "0"){
                     xml.open("GET", "/state_measure?state="+stateMeasure, true);
                     clearInterval(graphIntId);
                     clearInterval(ImpulseIntId);
                     document.getElementById("state").innerHTML = "Measurement stopped";
-                    runningMeasure = 0;
+                    stateMeasure = 0;
                 }
                 xml.send();
             }
@@ -64,7 +63,7 @@
                 xml.onreadystatechange = function(){
                     if (this.readyState == 4 && this.status == 200){
                         document.getElementById("Thrust").innerHTML = this.responseText;
-                        if (runningMeasure == "1") {
+                        if (stateMeasure == "1") {
                             thrustArray += this.responseText + " ";
                             arrOfString = thrustArray.split(" ");
                         }
@@ -145,21 +144,7 @@
             {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
             }
-
-
-            
-            function getArray()
-            {
-                const xhttp = new XMLHttpRequest();
-                xhttp.onreadystatechange = function()
-                {
-                    if (this.readyState == 4 && this.status == 200){
-                        arrOfString = xhttp.responseText.split(' ');
-                    }
-                };
-                xhttp.open("GET","/array", true);
-                xhttp.send();
-            }
+           
         </script>
     </body>
 </html>
