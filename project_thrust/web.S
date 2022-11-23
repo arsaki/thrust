@@ -3,5 +3,5 @@
 
 .align 4
 webpage:
-  .incbin "web.htm"
+  .incbin "/home/ara/Arduino/thrust/project_thrust/web.htm"
   .byte 0
