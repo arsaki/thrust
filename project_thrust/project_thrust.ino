@@ -31,8 +31,9 @@ const double g = 9.8154;
 
 double newtons = 0; 
 /* Thrust measurement data array */
-double thrust_array[ARRAY_LENGTH]; 
-int    thrust_array_count   = 0;
+double thrustArray[ARRAY_LENGTH]; 
+int    thrustArrayCount   = 0;
+time_t startTime = 0;
 String measureState ="0"; 
 
 HX711 scale;
@@ -56,14 +57,6 @@ void setStateMeasure()
   measureState = server.arg("state");
 }
 
-void sendArray() 
-{
-  String arrStr;
-  for (int i = 0; i < ARRAY_LENGTH; i++)
-    arrStr += (String)thrust_array[i] + " ";
-  server.send(200, "text/html", arrStr);
-}
-
 void sendThrust()
 {
   String thrust;
@@ -78,8 +71,8 @@ void sendImpulse()
 {
   double impulse = 0;
   for (int i = 0; i < ARRAY_LENGTH; i++){
-    if((String)thrust_array[i] != "nan"){
-      impulse = impulse + (thrust_array[i]*0.1);
+    if((String)thrustArray[i] != "nan"){
+      impulse = impulse + (thrustArray[i]*0.1);
     }
   }
   server.send(200, "text/plane", (String)impulse);
@@ -89,9 +82,9 @@ void sendFile()
 {
   String file;
   double sec = 0;
-  for (int i = 0; i < thrust_array_count; i++){
+  for (int i = 0; i < thrustArrayCount; i++){
     sec += 0.1;
-    file += (String)thrust_array[i] + "," + sec +"," + "\n";
+    file += (String)thrustArray[i] + "," + sec +"," + "\n";
   }
   server.send(200,"text/csv", file);
 }
@@ -104,8 +97,8 @@ void calibrate()
 void clearArray() 
 {
   for (int i = 0; i < ARRAY_LENGTH; i++)
-    thrust_array[i] = NAN;
-  thrust_array_count = 0;
+    thrustArray[i] = NAN;
+  thrustArrayCount = 0;
 }
 
 void setup(void) 
@@ -121,7 +114,6 @@ void setup(void)
   server.on("/",mainHTMLPage);
   server.on("/logo", sendImage);
   server.on("/state_measure", setStateMeasure);
-  server.on("/array", sendArray);
   server.on("/thrust", sendThrust);
   server.on("/impulse", sendImpulse);
   server.on("/file.csv",sendFile);
@@ -136,13 +128,15 @@ void loop()
   if (measureState == "1")
     clearArray();
   for (int i = 0; (measureState == "1") && (i < ARRAY_LENGTH); i++) {
-    if(i == ARRAY_LENGTH - 1)
+    if(i == (ARRAY_LENGTH - 1))
       measureState = "0";
-    delay(94);
+    startTime = millis();
     Serial.println((double)i/10);
     newtons = scale.get_units()*unitsToKg*g/1000;
-    thrust_array[i] = newtons;
-    thrust_array_count++;
-    server.handleClient();
+    thrustArray[i] = newtons;
+    thrustArrayCount++;
+    while (millis() < (startTime + 100))
+      server.handleClient();
+;
   }
 }
