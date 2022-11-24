@@ -25,8 +25,8 @@
         <canvas width="700" height="700" id="canvas"></canvas>  
 
         <script>
-            let graphIntId;
-            let ImpulseIntId;
+            let graphIntId = 0;
+            let impulseIntId = 0;
             let stateMeasure;
             let thrustArray;
             let arrOfString = [];
@@ -35,23 +35,28 @@
 
             function changeState(newState)
             {
+                const xml = new XMLHttpRequest();
+                
                 if (newState == 1){
                     stateMeasure = 1;
                     clearGraph();
                     thrustArray = [];
                     drawAxes();
-                    graphIntId = setInterval(function(){drawGraph()},250);
-                    ImpulseIntId = setInterval(function(){getImpulse()},250);
+                    if (!graphIntId)
+                        graphIntId = setInterval(function(){drawGraph()},250);
+                    if (!impulseIntId)
+                        impulseIntId = setInterval(function(){getImpulse()},250);
                     document.getElementById("state").innerHTML = "Measurement started";
-
                 }
                 if (newState == 0){
                     stateMeasure = 0;
                     clearInterval(graphIntId);
-                    clearInterval(ImpulseIntId);
+                    graphIntId = 0;
+                    clearInterval(impulseIntId);
+                    impulseIntId = 0;
                     document.getElementById("state").innerHTML = "Measurement stopped";
                 }                
-                const xml = new XMLHttpRequest();
+
                 xml.open("GET", "/state_measure?state="+stateMeasure, true);
                 xml.send();
                 xml.open("GET", "/state_measure?state="+stateMeasure, true);
@@ -67,6 +72,8 @@
                         if (stateMeasure == "1") {
                             thrustArray += this.responseText + " ";
                             arrOfString = thrustArray.split(" ");
+                            /* remove last element cause it is zero due split() */
+                            arrOfString.pop();
                         }
                     }
                 };
@@ -133,7 +140,7 @@
                 ctx.beginPath();
                 ctx.moveTo(30, 500-(arrOfString[0]*9.2));
                 for (var i=1; i<arrOfString.length;i++) {
-                    ctx.lineTo(30+i*2.32/2,(500-(arrOfString[i]*9.2)));
+                    ctx.lineTo(30+i*2.3/2,(499-(arrOfString[i]*9.2)));
                 }
                 ctx.stroke();
                 ctx.lineJoin='round';

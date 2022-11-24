@@ -55,6 +55,8 @@ void sendImage()
 void setStateMeasure() 
 {
   measureState = server.arg("state");
+  if (measureState == "1") 
+      clearArray();
 }
 
 void sendThrust()
