@@ -36,7 +36,8 @@
             function changeState(newState)
             {
                 const xml = new XMLHttpRequest();
-                
+                xml.open("GET", "/state_measure?state="+newState, true);
+                xml.send();
                 if (newState == 1){
                     stateMeasure = 1;
                     clearGraph();
@@ -57,10 +58,9 @@
                     document.getElementById("state").innerHTML = "Measurement stopped";
                 }                
 
-                xml.open("GET", "/state_measure?state="+stateMeasure, true);
-                xml.send();
-                xml.open("GET", "/state_measure?state="+stateMeasure, true);
-                xml.send();
+
+                //xml.open("GET", "/state_measure?state="+stateMeasure, true);
+                //xml.send();
             }
 
             function getThrust()

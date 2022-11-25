@@ -54,9 +54,14 @@ void sendImage()
 
 void setStateMeasure() 
 {
+  Serial.print("setStateMeasure() ");
+
   measureState = server.arg("state");
+  Serial.println(measureState);
   if (measureState == "1") 
       clearArray();
+  server.send(200, "text/plane", "");
+
 }
 
 void sendThrust()
@@ -82,22 +87,30 @@ void sendImpulse()
 
 void sendFile() 
 {
+  Serial.println("Отправка файла");
+
   String file;
   double sec = 0;
   for (int i = 0; i < thrustArrayCount; i++){
-    sec += 0.1;
     file += (String)thrustArray[i] + "," + sec +"," + "\n";
+    Serial.println(thrustArray[i]);
+    sec  += 0.1;
   }
   server.send(200,"text/csv", file);
 }
 
 void calibrate()
 {
+  Serial.println("Калибровка");
   scale.tare();
+  server.send(200, "text/plane", "");
+
 }
 
 void clearArray() 
 {
+  Serial.println("очистка массива");
+
   for (int i = 0; i < ARRAY_LENGTH; i++)
     thrustArray[i] = NAN;
   thrustArrayCount = 0;
@@ -130,15 +143,20 @@ void loop()
   if (measureState == "1")
     clearArray();
   for (int i = 0; (measureState == "1") && (i < ARRAY_LENGTH); i++) {
-    if(i == (ARRAY_LENGTH - 1))
-      measureState = "0";
     startTime = millis();
-    Serial.println((double)i/10);
     newtons = scale.get_units()*unitsToKg*g/1000;
     thrustArray[i] = newtons;
     thrustArrayCount++;
+    Serial.print(thrustArray[i]);
+    Serial.print(" ");
+    Serial.println(newtons);
+    /* handleClient() may take a lot of time */
     while (millis() < (startTime + 80))
       server.handleClient();
+    /* high accuracy due empty cycle */
     while (millis() < (startTime + 100));
+    if(i == (ARRAY_LENGTH - 1))
+      measureState = "0";
   }
+  
 }
