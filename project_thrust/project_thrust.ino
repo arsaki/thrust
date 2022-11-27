@@ -13,7 +13,7 @@
 #define SCK 		13
 /* Thrust measurement data array length */
 #define ARRAY_LENGTH	  1024
-#define LOGO_JPEG_SIZE  81312
+#define LOGO_JPEG_SIZE  18023
 
 /* logo_thrust.ino */
 extern const char logo_jpeg[LOGO_JPEG_SIZE];
@@ -54,7 +54,13 @@ void sendImage()
 
 void setStateMeasure() 
 {
-  measureState = server.arg("state");
+
+  String newState = server.arg("state");
+  if ((measureState == "0") && (newState =="1"))
+      clearArray();
+  measureState = newState;
+  server.send(200, "text/plane", "");
+
 }
 
 void sendThrust()
@@ -83,8 +89,8 @@ void sendFile()
   String file;
   double sec = 0;
   for (int i = 0; i < thrustArrayCount; i++){
-    sec += 0.1;
     file += (String)thrustArray[i] + "," + sec +"," + "\n";
+    sec  += 0.1;
   }
   server.send(200,"text/csv", file);
 }
@@ -92,6 +98,7 @@ void sendFile()
 void calibrate()
 {
   scale.tare();
+  server.send(200, "text/plane", "");
 }
 
 void clearArray() 
@@ -125,18 +132,17 @@ void setup(void)
 void loop() 
 {
   server.handleClient(); 
-  if (measureState == "1")
-    clearArray();
-  for (int i = 0; (measureState == "1") && (i < ARRAY_LENGTH); i++) {
-    if(i == (ARRAY_LENGTH - 1))
-      measureState = "0";
+  for (int i = 0; measureState == "1"; i++) {
     startTime = millis();
-    Serial.println((double)i/10);
     newtons = scale.get_units()*unitsToKg*g/1000;
     thrustArray[i] = newtons;
     thrustArrayCount++;
+    /* handleClient() may take a lot of time */
     while (millis() < (startTime + 80))
       server.handleClient();
+    /* high accuracy due empty cycle */
     while (millis() < (startTime + 100));
-  }
+    if(i == (ARRAY_LENGTH - 1))
+      measureState = "0";
+  } 
 }
